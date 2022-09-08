@@ -15,7 +15,7 @@
     "inflight": "^1.0.6",
     "inherits": "^2.0.4",
     "isarray": "^1.0.0",
-    "jszip": "^3.4.0",
+    "jszip": "^3.7.0",
     "lie": "^3.3.0",
     "minimatch": "^3.0.4",
     "once": "^1.4.0",
