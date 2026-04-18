@@ -239,6 +239,7 @@ var obj_webDriver;
                     console.log(`obj_expectedAsScriptElem.length:${obj_expectedAsScriptElem.length}`);
                     if(obj_expectedAsScriptElem.length < 1){
                         console.log(`<script> not found. Retry...`);
+                        await obj_webDriver.switchTo().defaultContent();
                         return false;
                     }
                     return obj_expectedAsScriptElem[0];
@@ -268,7 +269,7 @@ var obj_webDriver;
             
             // Search base64 encoded string
             // save-to-fiddle.js で /* */ コメントアウトしているので、これを探す。
-            var strarr_commentouted = str_temp.match(/\/\*(.+)\*\//g);
+            var strarr_commentouted = str_temp.match(/var +x *= *'(.+)\';/g);
             if(
                 (typeof strarr_commentouted === null) || // 文字列が見つからなかった場合
                 (strarr_commentouted.length != 1)
@@ -283,7 +284,7 @@ var obj_webDriver;
             }
 
             // Extract base64 encoded string
-            var str_base64Encoded = strarr_commentouted[0].replace(/\/\*(.+)\*\//g, '$1');
+            var str_base64Encoded = strarr_commentouted[0].replace(/var +x *= *'(.+)';/g, '$1');
             var obj_bf = new Buffer.from(str_base64Encoded,'base64');
 
             var obj_pathBeforeSave = path.parse(obj_url['path']);

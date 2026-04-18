@@ -227,7 +227,7 @@ var obj_webDriver;
 
             // Clip text for JavaScript
             clipboardy.writeSync(
-                `/*` + str_base64Encoded + `*/`
+                `var x='` + str_base64Encoded + `';`
             );
 
             // Click JavaScript Editor
