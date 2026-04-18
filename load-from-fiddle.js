@@ -185,7 +185,7 @@ var obj_webDriver;
                     var objarr_expectedAsResultElements = await obj_webDriver
                         .findElements(
                             By.xpath(
-                                `//div[@id="content"]` +
+                                `//main[@id="content"]` +
                                     `//div[${xPathPred_existsInClassList('panel-h')} and ${xPathPred_existsInClassList('panel')} and ${xPathPred_existsInClassList('resultsPanel')}]`
                             )
                         )
@@ -229,8 +229,19 @@ var obj_webDriver;
                         console.log(`<iframe> not found. Retry...`);
                         return false;
                     }
-
                     await obj_webDriver.switchTo().frame(obj_expectedAsIFrame[0]);
+                    // var obj_expectedAsIFrame_l2 = await obj_webDriver
+                    //     .findElements(
+                    //         By.xpath(`.//iframe`)
+                    //     )
+                    // ;
+                    // console.log(`obj_expectedAsIFrame_l2.length:${obj_expectedAsIFrame_l2.length}`);
+                    // if(obj_expectedAsIFrame_l2.length < 1){
+                    //     console.log(`<iframe> not found. Retry...`);
+                    //     return false;
+                    // }
+                    // await obj_webDriver.switchTo().frame(obj_expectedAsIFrame_l2[0]);
+
                     var obj_expectedAsScriptElem = await obj_webDriver
                         .findElements(
                             By.xpath(`//body//script[@type="text/javascript"]`)

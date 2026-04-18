@@ -107,7 +107,7 @@ var obj_webDriver;
             console.log(`Accessing to ${str_urlOfJSFiddle}`);
             await obj_webDriver.get(str_urlOfJSFiddle);
 
-            // note
+            // note todo update
             //
             // <div id="content">
             //     <div class="panel-v left">
@@ -131,10 +131,14 @@ var obj_webDriver;
                     var objarr_expectedAsEditorElements = await obj_webDriver
                         .findElements(
                             By.xpath(
-                                `//div[@id="content"]` +
+                                `//main[@id="content"]` +
                                     `//div[${xPathPred_existsInClassList('panel-h')} and ${xPathPred_existsInClassList('panel')}]` +
-                                        `//div[${xPathPred_existsInClassList('CodeMirror-scroll')}]`
+                                        `//div[${xPathPred_existsInClassList('editor-scrollable')}]`
                             )
+                            // By.xpath(
+                            //     `//main[@id="content"]` +
+                            //         `//div[${xPathPred_existsInClassList('panel-h')} and ${xPathPred_existsInClassList('panel')}]`
+                            // )
                         )
                     ;
                     console.log(`objarr_expectedAsEditorElements.length:${objarr_expectedAsEditorElements.length}`);
@@ -305,14 +309,14 @@ var obj_webDriver;
                 var bl_focused = await obj_webDriver
                     .wait(async function(){
 
-                        var obj_parentElem = await obj_element.findElement(By.xpath('./..'));
+                        var obj_parentElem = await obj_element.findElement(By.xpath('./../..'));
                         var str_clsNameOfParentElem = await obj_parentElem.getAttribute('class');
                         // console.log(`str_clsNameOfParentElem:${str_clsNameOfParentElem}`);
                         var strarr_clsNames = str_clsNameOfParentElem.split(' ');
                         for(let int_idxOfClsNames = 0 ; int_idxOfClsNames < strarr_clsNames.length ; int_idxOfClsNames++){
 
                             // 親 node の class に `CodeMirror-focused` が追加された
-                            if(strarr_clsNames[int_idxOfClsNames] == 'CodeMirror-focused'){
+                            if(strarr_clsNames[int_idxOfClsNames] == 'focused'){
                                 return true;
                             }
                         }
@@ -439,3 +443,4 @@ function getByteLen(str) {
     }
     return length;
 };
+
