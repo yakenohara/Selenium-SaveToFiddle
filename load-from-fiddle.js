@@ -230,17 +230,6 @@ var obj_webDriver;
                         return false;
                     }
                     await obj_webDriver.switchTo().frame(obj_expectedAsIFrame[0]);
-                    // var obj_expectedAsIFrame_l2 = await obj_webDriver
-                    //     .findElements(
-                    //         By.xpath(`.//iframe`)
-                    //     )
-                    // ;
-                    // console.log(`obj_expectedAsIFrame_l2.length:${obj_expectedAsIFrame_l2.length}`);
-                    // if(obj_expectedAsIFrame_l2.length < 1){
-                    //     console.log(`<iframe> not found. Retry...`);
-                    //     return false;
-                    // }
-                    // await obj_webDriver.switchTo().frame(obj_expectedAsIFrame_l2[0]);
 
                     var obj_expectedAsScriptElem = await obj_webDriver
                         .findElements(

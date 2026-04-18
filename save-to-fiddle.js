@@ -251,6 +251,48 @@ var obj_webDriver;
                 .keyUp(Key.CONTROL)
             ;
             await obj_actions.perform();
+
+            await obj_webDriver
+                .wait(async function(){
+                    var objarr_spanElements = await objarr_elements[1]
+                        .findElements(
+                            By.xpath(
+                                `.//div[${xPathPred_existsInClassList('view-lines')} and ${xPathPred_existsInClassList('monaco-mouse-cursor-text')}]` + 
+                                    `//span[${xPathPred_existsInClassList('mtk1')}]`
+                            )
+                        )
+                    ;
+                    console.log(`objarr_spanElements.length:${objarr_spanElements.length}`);
+                    if(objarr_spanElements.length < 1){
+                        console.log(`Span not found. Retry...`);
+                        return false;
+                    }
+                    var str_temp = await objarr_spanElements[0].getAttribute('innerHTML');
+                    if (
+                            ((typeof str_temp) !== 'string') || // `getAttribute()` 結果を返さない場合
+                            (str_temp.length < 1)               // 貼り付けた文字列が見当たらない場合
+                        ){
+                        console.log(`Pasted string not found. Retry...`);
+                        return false;
+                    }
+                    return objarr_spanElements;
+                },int_waitMsForTextEditorLocated)
+                .catch(function(e){
+                    if( (typeof e) === 'object' && e.constructor.name === "TimeoutError"){
+                        let str_msg = `Cannot find WebElement that repreesnts text editor.`
+                        console.error(str_msg);
+                        return {
+                            "argument":str_arg,
+                            "path":str_absPathOfArg,
+                            "result":"NG",
+                            "message":str_msg
+                        };
+                    
+                    }else{
+                        throw e;
+                    }
+                })
+            ;
             
             // Save URL (2of2)
             var {beforeUrl, afterUrl} = await func_saveAndWaitUrl(int_waitMsForSavedUrlGenerated);

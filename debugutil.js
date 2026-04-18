@@ -3,6 +3,11 @@
  * @param {WebDriver} driver 
  * @param {WebElement} element 
  * @returns {Promise<string>}
+ * 実装例
+```node.js
+const debugutil = require('./debugutil.js');
+console.log(await debugutil.getXPath(obj_webDriver, objarr_elements[1]));
+```
  */
 async function getXPath(driver, element) {
     return await driver.executeScript(`
