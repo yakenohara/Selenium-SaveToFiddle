@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const debugutil = require('./debugutil.js');
 const {Builder, Button, Browser, By, Capabilities, Key} = require('selenium-webdriver');
 const clipboardy = require('clipboardy');
 
@@ -126,44 +127,47 @@ var obj_webDriver;
             //         <div class="gutter gutter-vertical">
             //         <div class="panel-h panel resultsPanel">  // <- Result
             //
-            var objarr_elements = await obj_webDriver
-                .wait(async function(){
-                    var objarr_expectedAsEditorElements = await obj_webDriver
-                        .findElements(
-                            By.xpath(
-                                `//main[@id="content"]` +
-                                    `//div[${xPathPred_existsInClassList('panel-h')} and ${xPathPred_existsInClassList('panel')}]` +
-                                        `//div[${xPathPred_existsInClassList('editor-scrollable')}]`
+            async function fnc_a(){
+                return (await obj_webDriver
+                    .wait(async function(){
+                        var objarr_expectedAsEditorElements = await obj_webDriver
+                            .findElements(
+                                By.xpath(
+                                    `//main[@id="content"]` +
+                                        `//div[${xPathPred_existsInClassList('panel-h')} and ${xPathPred_existsInClassList('panel')}]` +
+                                            `//div[${xPathPred_existsInClassList('editor-scrollable')}]`
+                                )
+                                // By.xpath(
+                                //     `//main[@id="content"]` +
+                                //         `//div[${xPathPred_existsInClassList('panel-h')} and ${xPathPred_existsInClassList('panel')}]`
+                                // )
                             )
-                            // By.xpath(
-                            //     `//main[@id="content"]` +
-                            //         `//div[${xPathPred_existsInClassList('panel-h')} and ${xPathPred_existsInClassList('panel')}]`
-                            // )
-                        )
-                    ;
-                    console.log(`objarr_expectedAsEditorElements.length:${objarr_expectedAsEditorElements.length}`);
-                    if(objarr_expectedAsEditorElements.length < 3){
-                        console.log(`Editors not found. Retry...`);
-                        return false;
-                    }
-                    return objarr_expectedAsEditorElements;
-                },int_waitMsForTextEditorLocated)
-                .catch(function(e){
-                    if( (typeof e) === 'object' && e.constructor.name === "TimeoutError"){
-                        let str_msg = `Cannot find WebElement that repreesnts text editor.`
-                        console.error(str_msg);
-                        return {
-                            "argument":str_arg,
-                            "path":str_absPathOfArg,
-                            "result":"NG",
-                            "message":str_msg
-                        };
-                    
-                    }else{
-                        throw e;
-                    }
-                })
-            ;
+                        ;
+                        console.log(`objarr_expectedAsEditorElements.length:${objarr_expectedAsEditorElements.length}`);
+                        if(objarr_expectedAsEditorElements.length < 3){
+                            console.log(`Editors not found. Retry...`);
+                            return false;
+                        }
+                        return objarr_expectedAsEditorElements;
+                    },int_waitMsForTextEditorLocated)
+                    .catch(function(e){
+                        if( (typeof e) === 'object' && e.constructor.name === "TimeoutError"){
+                            let str_msg = `Cannot find WebElement that repreesnts text editor.`
+                            console.error(str_msg);
+                            return {
+                                "argument":str_arg,
+                                "path":str_absPathOfArg,
+                                "result":"NG",
+                                "message":str_msg
+                            };
+                        
+                        }else{
+                            throw e;
+                        }
+                    })
+                );
+            }
+            var objarr_elements = await fnc_a();
 
             var obj_actions = obj_webDriver.actions();
 
@@ -195,13 +199,16 @@ var obj_webDriver;
 
             console.log(`${padding('Saved URL', int_padding, ' ')}:${afterUrl}`);
 
+            objarr_elements = await fnc_a();
+
             var str_urlDirNameL1 = afterUrl.replace(beforeUrl, '');
             str_urlDirNameL1 = str_urlDirNameL1.replace(/(.+)\//, '$1');
             
             // Clip text for HTML
-            clipboardy.writeSync(
+            await func_safeClipboardWrite(
                 `<div>` + str_urlDirNameL1 + `<div>`
             );
+            
 
             // Click HTML Editor
             var bl_focused = await func_tryClickAndWaitCaret(objarr_elements[0], int_tryTimesForClickTextEditor);
@@ -225,8 +232,10 @@ var obj_webDriver;
             ;
             await obj_actions.perform();
 
+            objarr_elements = await fnc_a();
+
             // Clip text for JavaScript
-            clipboardy.writeSync(
+            await func_safeClipboardWrite(
                 `var x='` + str_base64Encoded + `';`
             );
 
@@ -244,7 +253,7 @@ var obj_webDriver;
             }
 
             // Paste to JavaScript Editor
-            await obj_actions.clear();
+            await obj_actions.clear(); //todo なぜかクリアされない場合あり
             obj_actions
                 .keyDown(Key.CONTROL)
                 .sendKeys('v')
@@ -252,28 +261,40 @@ var obj_webDriver;
             ;
             await obj_actions.perform();
 
+            objarr_elements = await fnc_a();
+
             await obj_webDriver
                 .wait(async function(){
-                    var objarr_spanElements = await objarr_elements[1]
-                        .findElements(
-                            By.xpath(
-                                `.//div[${xPathPred_existsInClassList('view-lines')} and ${xPathPred_existsInClassList('monaco-mouse-cursor-text')}]` + 
-                                    `//span[${xPathPred_existsInClassList('mtk1')}]`
+                    try{
+                        var objarr_spanElements = await objarr_elements[1]
+                            .findElements(
+                                By.xpath(
+                                    `.//div[${xPathPred_existsInClassList('view-lines')} and ${xPathPred_existsInClassList('monaco-mouse-cursor-text')}]` + 
+                                        `//span[${xPathPred_existsInClassList('mtk1')}]`
+                                )
                             )
-                        )
-                    ;
-                    console.log(`objarr_spanElements.length:${objarr_spanElements.length}`);
-                    if(objarr_spanElements.length < 1){
-                        console.log(`Span not found. Retry...`);
-                        return false;
-                    }
-                    var str_temp = await objarr_spanElements[0].getAttribute('innerHTML');
-                    if (
-                            ((typeof str_temp) !== 'string') || // `getAttribute()` 結果を返さない場合
-                            (str_temp.length < 1)               // 貼り付けた文字列が見当たらない場合
-                        ){
-                        console.log(`Pasted string not found. Retry...`);
-                        return false;
+                        ;
+                        console.log(`objarr_spanElements.length:${objarr_spanElements.length}`);
+                        if(objarr_spanElements.length < 1){
+                            console.log(`Span not found. Retry...`);
+                            return false;
+                        }
+                        var str_temp = await objarr_spanElements[0].getAttribute('innerHTML');
+                        if (
+                                ((typeof str_temp) !== 'string') || // `getAttribute()` 結果を返さない場合
+                                (str_temp.length < 1)               // 貼り付けた文字列が見当たらない場合
+                            ){
+                            console.log(`Pasted string not found. Retry...`);
+                            return false;
+                        }
+                    } catch(e) {
+                        // 実行中に DOM が書き換わって StaleError になったら、
+                        // return false して次のループ（再取得）に回す
+                        if (e.name === 'StaleElementReferenceError') {
+                            console.log(`StaleElementReferenceError. It seemed to pasting process is in process. Retry...`);
+                            return false;
+                        }
+                        throw e;
                     }
                     return objarr_spanElements;
                 },int_waitMsForTextEditorLocated)
@@ -335,6 +356,9 @@ var obj_webDriver;
             //
             async function func_clickAndWaitCaret(obj_element, int_waitMs){
 
+                // `.perform()` するので obj_element 参照先消される可能性あり。 -> 念のため xpath を取得しておく
+                var str_xpathOfElement = await debugutil.getXPath(obj_webDriver, obj_element);
+
                 // Click Editor
                 await obj_actions.clear();
                 obj_actions
@@ -345,6 +369,23 @@ var obj_webDriver;
                     .release(Button.LEFT)
                 ;
                 await obj_actions.perform();
+
+                // `.perform()` したので念のため取得し直し
+                obj_element = await obj_webDriver
+                    .wait(async function(){
+                        var objarr_elements_remap = await obj_webDriver
+                            .findElements(
+                                By.xpath(str_xpathOfElement)
+                            )
+                        ;
+                        console.log(`objarr_elements_remap.length:${objarr_elements_remap.length}`);
+                        if(objarr_elements_remap.length < 1){
+                            console.log(`Element ${str_xpathOfElement} not found. Retry...`);
+                            return false;
+                        }
+                        return objarr_elements_remap[0];
+                    },int_waitMs)
+                ;
 
                 // 親 node の class に `CodeMirror-focused` が追加されたことを確認する事で、
                 // キャレット表示されたことを判定する
@@ -433,6 +474,22 @@ var obj_webDriver;
                     beforeUrl:str_urlBeforeSave,
                     afterUrl:str_urlAfterSave
                 };
+            }
+
+            //
+            // クリップボードへの書き込みをリトライ付きで実行する
+            //
+            async function func_safeClipboardWrite(str_text, int_numOfRetries = 60) {
+                for (let int_i = 0; int_i < int_numOfRetries; int_i++) {
+                    try {
+                        clipboardy.writeSync(str_text);
+                        return; // 成功したら終了
+                    } catch (e) {
+                        if (int_i === int_numOfRetries - 1) throw e; // 最後のリトライでもダメならエラーを投げる
+                        console.warn(`Clipboard copy failed. Retrying...`);
+                        await new Promise(resolve => setTimeout(resolve, 200)); // 200ms 待機
+                    }
+                }
             }
 
         })();

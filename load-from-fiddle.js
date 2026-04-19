@@ -264,16 +264,37 @@ var obj_webDriver;
                     "message":str_msg
                 };
             }
+            var str_base64Encoded = await obj_webDriver
+                .wait(async function(){
 
-            var str_temp = await obj_scriptElem.getAttribute('innerHTML');
-            
-            // Search base64 encoded string
-            // save-to-fiddle.js で /* */ コメントアウトしているので、これを探す。
-            var strarr_commentouted = str_temp.match(/var +x *= *'(.+)\';/g);
-            if(
-                (typeof strarr_commentouted === null) || // 文字列が見つからなかった場合
-                (strarr_commentouted.length != 1)
-            ){
+                    var str_temp = await obj_scriptElem.getAttribute('innerHTML');
+
+                    // Search base64 encoded string
+                    // save-to-fiddle.js で /* */ コメントアウトしているので、これを探す。
+                    var strarr_commentouted = str_temp.match(/var +x *= *'(.+)\';/g);
+                    if(
+                        (strarr_commentouted === null) || // 文字列が見つからなかった場合
+                        (strarr_commentouted.length != 1)
+                    ){
+                        let str_msg = `Encoded string not found. Retry...`;
+                        return false;
+                    }
+
+                    // Extract base64 encoded string
+                    return strarr_commentouted[0].replace(/var +x *= *'(.+)';/g, '$1');
+
+                },int_waitMsForScriptLocated)
+                .catch(function(e){
+                    if( (typeof e) === 'object' && e.constructor.name === "TimeoutError"){
+                        console.error('Timed out Generating saved url.');
+                        return undefined;
+                    
+                    }else{
+                        throw e;
+                    }
+                })
+            ;
+            if(!str_base64Encoded){
                 let str_msg = `Encoded string not found.`;
                 console.error(str_msg);
                 return {
@@ -284,7 +305,6 @@ var obj_webDriver;
             }
 
             // Extract base64 encoded string
-            var str_base64Encoded = strarr_commentouted[0].replace(/var +x *= *'(.+)';/g, '$1');
             var obj_bf = new Buffer.from(str_base64Encoded,'base64');
 
             var obj_pathBeforeSave = path.parse(obj_url['path']);
