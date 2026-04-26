@@ -527,13 +527,15 @@ var obj_webDriver;
         max-height: 80%;
         /* 中身を広げるための設定 */
         display: flex;
-        flex-direction: column;">
+        flex-direction: column;
+        /* 他の要素よりも確実に手前に表示させるための設定 */
+        z-index: ${2**31 - 1}};">
 
         <textarea style="box-sizing: border-box; width: 100%; height: 100%; flex-grow: 1; resize: none; background-color:#fff; color:#000000;
             /* 横に長くても改行させない設定 */
             white-space: nowrap; 
             /* 横スクロールバーを必要に応じて表示 */
-            overflow: auto;""></textarea>
+            overflow: auto;"></textarea>
     </div>
 </div>
 `
@@ -541,6 +543,8 @@ var obj_webDriver;
 
                 await obj_webDriver
                     .wait(async function(){
+
+                        await fnc_deleteDummyElement(); // 追加した dummy element を削除 (失敗していた場合は作り直したいので一旦削除)
                         
                         await obj_webDriver.executeScript(
                             "document.body.insertAdjacentHTML('beforeend', arguments[0]);", 
@@ -596,14 +600,16 @@ var obj_webDriver;
                         var str_pasted = await obj_elems_expectedAsTextArea.getAttribute('value');
 
                         //todo str_pasted が違った場合の処理
-                        if(str_pasted === str_text){
+                        if(str_pasted !== str_text){
                             console.log(`Span not found. Retry...`);
-                            await fnc_deleteDummyElement(); // 追加した dummy element を削除
                             return false;
                         }
+
+                        await fnc_deleteDummyElement(); // 追加した dummy element を削除
+                        return true;
+
                     }, int_waitMsForCaretLocated)
                     .catch(async function(e){
-                        await fnc_deleteDummyElement(); // 追加した dummy element を削除
                         if( (typeof e) === 'object' && e.constructor.name === "TimeoutError"){
                             let str_msg = `Cannot paste specified string to dummy element.`;
                             throw(new Error(str_msg, {
@@ -621,12 +627,10 @@ var obj_webDriver;
                     })
                 ;
 
-                await fnc_deleteDummyElement(); // 追加した dummy element を削除
-
                 // 追加した dummy element を削除
                 async function fnc_deleteDummyElement() {
                     await obj_webDriver.executeScript(
-                        `document.getElementById(arguments[0]).remove();`,
+                        `document.getElementById(arguments[0])?.remove();`,
                         str_id_tmp
                     );
                 }
